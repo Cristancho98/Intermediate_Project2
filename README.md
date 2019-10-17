@@ -74,9 +74,9 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 
 %%%%%%%%%%%%%%%
 
-**DIAGRAMA DE CONEXIÓN SPI** 
+**DIAGRAMA DE CONEXIÓN** 
 
-%% <a href="I2C"><img src="../master/Esquemáticos/SPI_esquematico.PNG"  width="70%" align="center"></a>
+%% <a href="I2C"><img src="../master/Diagramas/Conexión.PNG"  width="70%" align="center"></a>
 
 **SCRIPT DE PYTHON** 
      
