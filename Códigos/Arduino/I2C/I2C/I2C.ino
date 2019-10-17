@@ -1,31 +1,41 @@
 #include <Wire.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
-#define SLAVE_ADDRESS 0x04
-int number = 0;
-int state = 0;
+OneWire ourWire(13);
+DallasTemperature sensors(&ourWire);
 
-void setup() {
-    pinMode(7, OUTPUT);
+#define MASTER_ADDRESS 0x04
+#define SLAVE_ADDRESS 0X03
+int x=0;
+
+void setup(){
+    pinMode(8, OUTPUT);
     Serial.begin(9600);
-    Wire.begin(SLAVE_ADDRESS);
+    Wire.begin(MASTER_ADDRESS);
     Wire.onReceive(receiveData);
-    Serial.println("Ready!");
+    Wire.onRequest(rpi);
+    sensors.begin();
 }
-
-void loop() {
-    delay(100);
+void loop(void){
+  sensors.requestTemperatures();
+  x=sensors.getTempCByIndex(0);
+  Serial.println(x);
+  delay(1000);
+  Wire.onRequest(rpi);
 }
-
 void receiveData(int byteCount){
-
     while(Wire.available()) {
-          number = Wire.read();
-          Serial.print("data received: ");
-          Serial.println(number);
-
-          if (number == 1)
-              digitalWrite(7, HIGH); // set the LED on
-          else
-              digitalWrite(7, LOW); // set the LED on
-   }
+         byteCount = Wire.read();
+         Serial.println(byteCount);
+         if(byteCount==1){
+         digitalWrite(8,HIGH);
+         }
+         if(byteCount==0){
+           digitalWrite(8,LOW);
+         }        
+     }
+}
+void rpi(){
+  Wire.write(x);
 }
