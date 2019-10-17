@@ -2,7 +2,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-OneWire ourWire(13);
+OneWire ourWire(2);
 DallasTemperature sensors(&ourWire);
 
 #define MASTER_ADDRESS 0x04
@@ -10,7 +10,7 @@ DallasTemperature sensors(&ourWire);
 int x=0;
 
 void setup(){
-    pinMode(8, OUTPUT);
+    pinMode(13, OUTPUT);
     Serial.begin(9600);
     Wire.begin(MASTER_ADDRESS);
     Wire.onReceive(receiveData);
@@ -20,6 +20,7 @@ void setup(){
 void loop(void){
   sensors.requestTemperatures();
   x=sensors.getTempCByIndex(0);
+  Serial.print("envio : ");
   Serial.println(x);
   delay(1000);
   Wire.onRequest(rpi);
@@ -38,4 +39,5 @@ void receiveData(int byteCount){
 }
 void rpi(){
   Wire.write(x);
+  
 }
