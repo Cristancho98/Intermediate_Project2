@@ -8,7 +8,7 @@
 
 
 
-## MATERIALES
+## MATERIALES //LISTO
 * 1 PC
 * Chrome/Mozilla/Internet Explorer
 * Acceso a servicio de Internet
@@ -18,7 +18,7 @@
 * 1 protoboard y cables
 * Elementos eléctricos para el circuito de acondicionamiento del sensor DS18B20 y actuador LED
 
-## OBJETIVOS
+## OBJETIVOS //LISTO
 * Afianzar los conceptos básicos asociados a Internet de las Cosas (IoT).
 * Familiarizarse con el manaje de gestores de bases de datos y servidores Web en sistemas embebidos.
 * Familiarizarse con una arquitectura de dos niveles compuesta por un controlador de bajo nivel y un
@@ -38,7 +38,7 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 # DESARROLLO Y PROCEDIMIENTO
 
 
-### CRITERIOS DE DISEÑO
+### CRITERIOS DE DISEÑO //LISTO
 
 1. La solución debe usar el sensor DS18B20 para medir la temperatura
 2. Los datos recibidos por el sensor deben almacenarse en en una base de datos local en la rapsberry
@@ -50,9 +50,7 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 
 %% <a href="I2C"><img src="../master/Diagramas/Diagrama_Bloques.PNG"  width="50%" align="justify"></a>
 
-## COMUNICACIÓN I2C
-**Procedimiento**
-
+## COMUNICACIÓN I2C //LISTO
 1. Iniciar la raspberry y acceder a la consola de comando
 2. Configurar la raspberry
   * sudo raspi-config
@@ -68,134 +66,68 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 6. Crear el script de Python usando sudo nano NOMBREDELSCRIPT.py (Tener presente en que directorio se guardo)
 7. Compilar el script usando python NOMBREDELSCRIPT.py
 
-**SCRIPT DE PYTHON** 
-
-    import smbus
-    import time
-    import Rpi.GPIO as GPIO         #IMPORTAR LIBRERIAS
-    
-    us = smbus.SMBus(1)            #i2c
-    address = 0x04                  #Direccion de conexion
-    
-    GPIO.setmode(GPIO.BCM)          #Iniciando GPIO
-    GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)     #GPIO18 como entrada (pin 12)
-    
-    def WBytes():
-        bus.write_byte(address,1)
-        return -1
-        
-    while true:                     #Encendido y apagado del led
-        if GPIO.input(18) == 1:
-                WBytes()
-                print ("Envio : ")
-        time.sleep(1)
-
-**CONFIGURAR EL ARDUINO COMO ESCLAVO**
-**SCRIPT DE ARDUINO** 
-
-    #include <Wire.h>
-    char x='0';
-    void setup() {
-
-      //Estableciendo direccion con Raspberry Pi 3
-      Wire.begin(0x10);                   
-      Wire.onReceive(receiveEvent); 
-
-      //Estableciendo configuracion de Arduino
-      pinMode(LED_BUILTIN, OUTPUT);
-      pinMode(7 ,OUTPUT);
-      digitalWrite(LED_BUILTIN, LOW); 
-      Serial.begin(9600); 
-    }
-    void loop() { //Ciclo de encendido y apagado del LED
-      delay(100);
-
-      if(x==1){
-         Serial.println("Encendiendo");
-         digitalWrite(LED_BUILTIN, HIGH);
-         digitalWrite(7, HIGH);
-     }else{
-         Serial.println("Apagando");
-         digitalWrite(LED_BUILTIN, LOW);
-         digitalWrite(7, LOW);
-         }
-     }
-     
-    void receiveEvent(int howMany) {
-    while (Wire.available()) { 
-      x = Wire.read();
-      }
-    }
-
-**DIAGRAMA DE CONEXIÓN I2C** 
+**DIAGRAMA DE CONEXIÓN I2C** //LISTO
 
 <a href="I2C"><img src="../master/Esquemáticos/I2C_esquematico.PNG"  width="70%" align="center"></a>
 
-**PRUEBAS DE FUNCIONAMIENTO** 
+## PROCEDIMIENTO DE LA SOLUCIÓN
 
-<a href="I2C"><img src="../master/Imagenes/Prueba1.jpeg"  width="50%" align="justify"></a>
-<a href="I2C"><img src="../master/Imagenes/Prueba2.jpeg"  width="50%" align="justify"></a>
-
-
-## COMUNICACIÓN SPI
-**Procedimiento**
-El procedimiento realmente es igual al anterior, solo difiere al momento de crear los scripts
+%%%%%%%%%%%%%%%
 
 **SCRIPT DE PYTHON** 
+     
+     import time
+     import paho.mqtt.client as mqtt
+     import paho.mqtt.client as paho  #librerias necesarias para la implementacion
+     import sqlite3
+     import datetime
+     import smbus
+     from time import sleep
+     channel = 1
+     address = 0x04#arduino uno address
+     address2 = 0x03
+     bus = smbus.SMBus(channel) #se define el bus
+     def InsertData(temp):#funcion para la insercion de datos en la base de datos local
+         ts = time.time()
+         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') #metodo la obtener la fecha y hora actual
+         conn=sqlite3.connect('/home/pi/iot4.db') #ubicacion de la base de datos
+         curs=conn.cursor()
+         curs.execute("INSERT INTO temperatura (temperatura,fecha) VALUES ((?),(?))",(temp,st)) #insercion de datos en la base
+         conn.commit()    
+     broker="iot.eclipse.org" #broker
+      #define callback
+     def on_message(client, userdata, message):
+         time.sleep(1)    
+     while(True):
+             temp=bus.read_byte(address) #temperatura que le llega del arduino
+             print(temp)
+             InsertData(temp) 
+             time.sleep(1)
+             client= paho.Client("client-001") 
+             client.on_message=on_message
+             client.connect(broker)     #connect
+             client.loop_start()      #start loop to process received messages
+             print("publishing ")
+             client.publish("house/bulb1",temp)    #publish
+             time.sleep(4)
+             client.disconnect()    #disconnect
+             client.loop_stop()     #stop loop
+             led=bus.write_byte(address,0)
+             if(temp&#62;=25):
+                 print('Alerta de temperatura alta')
+                 temp=bus.write_byte(address,1)
+                 InsertData(temp)        
+                 time.sleep(2)
+                 client= paho.Client("client-001") 
+                 client.on_message=on_message
+                 client.connect(broker)     #connect
+                 client.loop_start()      #start loop to process received messages
+                 print("publishing ")
+                 client.publish("house/bulb1","Alerta de temperatura alta")     #publish
+                 time.sleep(4)
+                 client.disconnect()     #disconnect
+                 client.loop_stop()       #stop loop   
 
-    import time
-import paho.mqtt.client as mqtt
-import paho.mqtt.client as paho  #librerias necesarias para la implementacion
-import sqlite3
-import datetime
-import smbus
-from time import sleep
-channel = 1
-address = 0x04#arduino uno address
-address2 = 0x03
-bus = smbus.SMBus(channel) #se define el bus
-def InsertData(temp):#funcion para la insercion de datos en la base de datos local
-    ts = time.time()
-    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') #metodo la obtener la fecha y hora actual
-    conn=sqlite3.connect('/home/pi/iot4.db') #ubicacion de la base de datos
-    curs=conn.cursor()
-    curs.execute("INSERT INTO temperatura (temperatura,fecha) VALUES ((?),(?))",(temp,st)) #insercion de datos en la base
-    conn.commit()    
-broker="iot.eclipse.org" #broker
- #define callback
-def on_message(client, userdata, message):
-    time.sleep(1)    
-while(True):
-        temp=bus.read_byte(address) #temperatura que le llega del arduino
-        print(temp)
-        InsertData(temp) 
-        time.sleep(1)
-        client= paho.Client("client-001") 
-        client.on_message=on_message
-        client.connect(broker)     #connect
-        client.loop_start()      #start loop to process received messages
-        print("publishing ")
-        client.publish("house/bulb1",temp)    #publish
-        time.sleep(4)
-        client.disconnect()    #disconnect
-        client.loop_stop()     #stop loop
-        led=bus.write_byte(address,0)
-        if(temp&#62;=25):
-            print('Alerta de temperatura alta')
-            temp=bus.write_byte(address,1)
-            InsertData(temp)        
-            time.sleep(2)
-            client= paho.Client("client-001") 
-            client.on_message=on_message
-            client.connect(broker)     #connect
-            client.loop_start()      #start loop to process received messages
-            print("publishing ")
-            client.publish("house/bulb1","Alerta de temperatura alta")     #publish
-            time.sleep(4)
-            client.disconnect()     #disconnect
-            client.loop_stop()       #stop loop   
-
-**CONFIGURAR EL ARDUINO COMO ESCLAVO**
 **SCRIPT DE ARDUINO** 
 
         #include &#60;Wire.h&#62;
