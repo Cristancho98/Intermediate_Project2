@@ -82,7 +82,7 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
      
      import time
      import paho.mqtt.client as mqtt
-     import paho.mqtt.client as paho  #librerias necesarias para la implementacion
+     import paho.mqtt.client as paho  
      import sqlite3
      import datetime
      import smbus
@@ -93,10 +93,10 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
      bus = smbus.SMBus(channel) #se define el bus
      def InsertData(temp):#funcion para la insercion de datos en la base de datos local
          ts = time.time()
-         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') #metodo la obtener la fecha y hora actual
+         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') 
          conn=sqlite3.connect('/home/pi/iot4.db') #ubicacion de la base de datos
          curs=conn.cursor()
-         curs.execute("INSERT INTO temperatura (temperatura,fecha) VALUES ((?),(?))",(temp,st)) #insercion de datos en la base
+         curs.execute("INSERT INTO temperatura (temperatura,fecha) VALUES ((?),(?))",(temp,st)) 
          conn.commit()    
      broker="iot.eclipse.org" #broker
       #define callback
