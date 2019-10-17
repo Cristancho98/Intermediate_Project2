@@ -80,101 +80,110 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 
 **SCRIPT DE PYTHON** 
      
-     import time
-     import paho.mqtt.client as mqtt
-     import paho.mqtt.client as paho  
-     import sqlite3
-     import datetime
-     import smbus
-     from time import sleep
-     channel = 1
-     address = 0x04#arduino uno address
-     address2 = 0x03
-     bus = smbus.SMBus(channel) #se define el bus
-     def InsertData(temp):#funcion para la insercion de datos en la base de datos local
-         ts = time.time()
-         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') 
-         conn=sqlite3.connect('/home/pi/iot4.db') #ubicacion de la base de datos
-         curs=conn.cursor()
-         curs.execute("INSERT INTO temperatura (temperatura,fecha) VALUES ((?),(?))",(temp,st)) 
-         conn.commit()    
-     broker="iot.eclipse.org" #broker
-      #define callback
-     def on_message(client, userdata, message):
-         time.sleep(1)    
-     while(True):
-             temp=bus.read_byte(address) #temperatura que le llega del arduino
-             print(temp)
-             InsertData(temp) 
-             time.sleep(1)
-             client= paho.Client("client-001") 
-             client.on_message=on_message
-             client.connect(broker)     #connect
-             client.loop_start()      #start loop to process received messages
-             print("publishing ")
-             client.publish("house/bulb1",temp)    #publish
-             time.sleep(4)
-             client.disconnect()    #disconnect
-             client.loop_stop()     #stop loop
-             led=bus.write_byte(address,0)
-             if(temp&#62;=25):
-                 print('Alerta de temperatura alta')
-                 temp=bus.write_byte(address,1)
-                 InsertData(temp)        
-                 time.sleep(2)
-                 client= paho.Client("client-001") 
-                 client.on_message=on_message
-                 client.connect(broker)     #connect
-                 client.loop_start()      #start loop to process received messages
-                 print("publishing ")
-                 client.publish("house/bulb1","Alerta de temperatura alta")     #publish
-                 time.sleep(4)
-                 client.disconnect()     #disconnect
-                 client.loop_stop()       #stop loop   
+    #import time
+    #import paho.mqtt.client as mqtt
+    #import paho.mqtt.client as paho
+    import sqlite3
+    import datetime
+    import smbus
+    from time import sleep
+
+    DEVICE_BUS = 1
+    DEVICE_ADDR = 0x15
+    bus = smbus.SMBus(DEVICE_BUS)
+
+    """ import smbus
+     DEVICE_BUS = 1
+     DEVICE_ADDR = 0x15
+     bus = smbus.SMBus(DEVICE_BUS)
+     bus.write_byte_data(DEVICE_ADDR, 0x00, 0x01)"""
+
+    def InsertData(temp):
+        ts = time.time()
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') 
+        conn=sqlite3.connect('/home/pi/iot4.db')
+        curs=conn.cursor()
+        curs.execute("INSERT INTO temperatura (temperatura,fecha) VALUES ((?),(?))",(temp,st))
+        conn.commit()
+    broker="iot.eclipse.org"
+
+    def on_message(client, userdata, message):
+        time.sleep(1)
+
+    while(True):
+
+            temp=bus.read_byte(DEVICE_ADDR) #Recibo la temperatura desde el arduino
+            print(temp)
+            InsertData(temp) 
+            time.sleep(1)
+            client= paho.Client("client-001") 
+            client.on_message=on_message
+            client.connect(broker)
+            client.loop_start()
+            print("publishing ")
+            client.publish("house/bulb1",temp)
+            time.sleep(4)
+            client.disconnect()
+            client.loop_stop()
+            led=bus.write_byte(DEVICE_ADDR,0)
+
+            if(temp>25):
+                print('Alerta temperatura alta : ',temp)
+                temp=bus.write_byte(DEVICE_ADDR, 0x00, 0x01)
+                InsertData(temp)        
+                time.sleep(2)
+                client= paho.Client("client-001") 
+                client.on_message=on_message
+                client.connect(broker)
+                client.loop_start()
+                print("publishing ")
+                client.publish("house/bulb1","Alerta de temperatura alta")
+                time.sleep(4)
+                client.disconnect()
+                client.loop_stop()
+  
 
 **SCRIPT DE ARDUINO** 
 
-      #include <Wire.h>
-      #include <OneWire.h>
-      #include <DallasTemperature.h>
+     #include <Wire.h>
+     #include <OneWire.h>
+     #include <DallasTemperature.h>
 
-      OneWire ourWire(13);
-      DallasTemperature sensors(&ourWire);
+     OneWire ourWire(2);
+     DallasTemperature sensors(&ourWire);
 
-      #define MASTER_ADDRESS 0x04
-      #define SLAVE_ADDRESS 0X03
-      int x=0;
+     #define MASTER_ADDRESS 0x04
+     #define SLAVE_ADDRESS 0X03
+     int x=0;
 
-      void setup(){
-          pinMode(8, OUTPUT);
-          Serial.begin(9600);
-          Wire.begin(MASTER_ADDRESS);
-          Wire.onReceive(receiveData);
-          Wire.onRequest(rpi);
-          sensors.begin();
-      }
-      void loop(void){
-        sensors.requestTemperatures();
-        x=sensors.getTempCByIndex(0);
-        Serial.println(x);
-        delay(1000);
-        Wire.onRequest(rpi);
-      }
-      void receiveData(int byteCount){
-          while(Wire.available()) {
-               byteCount = Wire.read();
-               Serial.println(byteCount);
-               if(byteCount==1){
-               digitalWrite(8,HIGH);
-               }
-               if(byteCount==0){
-                 digitalWrite(8,LOW);
-               }        
-           }
-      }
-      void rpi(){
-        Wire.write(x);
-      }
+     void setup(){
+         pinMode(13, OUTPUT);
+         Serial.begin(9600);
+         Wire.begin(MASTER_ADDRESS);
+         Wire.onReceive(receiveData);
+         Wire.onRequest(rpi);
+         sensors.begin();
+     }
+     void loop(void){
+       sensors.requestTemperatures();
+       x=sensors.getTempCByIndex(0);
+       Serial.print("envio : ");
+       Serial.println(x);
+       delay(1000);
+       Wire.onRequest(rpi);
+     }
+     void receiveData(int byteCount){
+         while(Wire.available()) {
+              byteCount = Wire.read();
+              Serial.println(byteCount);
+              if(byteCount==1){
+              digitalWrite(8,HIGH);
+              }
+              if(byteCount==0){
+                digitalWrite(8,LOW);
+              }        
+          }
+     }
     
 
 **PRUEBAS DE FUNCIONAMIENTO** 
