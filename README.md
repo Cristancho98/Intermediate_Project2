@@ -134,44 +134,47 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 
 **SCRIPT DE ARDUINO** 
 
-        #include &#60;Wire.h&#62;
-        #include &#60;OneWire.h&#62; 
-        #include &#60;DallasTemperature.h&#62;
-        OneWire ourWire(2);
-        #define MASTER_ADDRESS 0x04//address 
-        #define SLAVE_ADDRESS 0X03
-        int x=0;
-        DallasTemperature sensors(&#38;ourWire);
-        void setup(){
-            pinMode(8, OUTPUT);//se define el pin para el led
-            Serial.begin(9600);
-            Wire.begin(MASTER_ADDRESS);
-            Wire.onReceive(receiveData);
-            Wire.onRequest(rpi);
-            sensors.begin();
-        }
-        void loop(void){
-          sensors.requestTemperatures();//lectura del dato del sensor
-          x=sensors.getTempCByIndex(0);
-          Serial.println(x);
-          delay(1000);
+      #include <Wire.h>
+      #include <OneWire.h>
+      #include <DallasTemperature.h>
+
+      OneWire ourWire(13);
+      DallasTemperature sensors(&ourWire);
+
+      #define MASTER_ADDRESS 0x04
+      #define SLAVE_ADDRESS 0X03
+      int x=0;
+
+      void setup(){
+          pinMode(8, OUTPUT);
+          Serial.begin(9600);
+          Wire.begin(MASTER_ADDRESS);
+          Wire.onReceive(receiveData);
           Wire.onRequest(rpi);
-        }
-        void receiveData(int byteCount){//funcion para recibir datos del master
-            while(Wire.available()) {
-                 byteCount = Wire.read();
-                 Serial.println(byteCount);
-                 if(byteCount==1){//si el dato enviado por el master es 1 se prende el led
-                 digitalWrite(8,HIGH);
-                 }
-                 if(byteCount==0){//si el dato enviado por el master es 0 se apaga el led
-                   digitalWrite(8,LOW);
-                 }        
-             }
-        }
-        void rpi(){//funcion para enviar datos hacia el master
-          Wire.write(x);
-        }
+          sensors.begin();
+      }
+      void loop(void){
+        sensors.requestTemperatures();
+        x=sensors.getTempCByIndex(0);
+        Serial.println(x);
+        delay(1000);
+        Wire.onRequest(rpi);
+      }
+      void receiveData(int byteCount){
+          while(Wire.available()) {
+               byteCount = Wire.read();
+               Serial.println(byteCount);
+               if(byteCount==1){
+               digitalWrite(8,HIGH);
+               }
+               if(byteCount==0){
+                 digitalWrite(8,LOW);
+               }        
+           }
+      }
+      void rpi(){
+        Wire.write(x);
+      }
     
 
 **PRUEBAS DE FUNCIONAMIENTO** 
