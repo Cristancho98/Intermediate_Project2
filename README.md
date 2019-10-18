@@ -1,6 +1,6 @@
 # Intermediate Project #2 : Monitoring Iot based system for indoor applications using a controller of two levels
 
-* Realizado por: Daniel Cristancho
+* Realizado por: Daniel Cristancho, Jhanuar Sanchez
 * Universida Sergio Arboleda, Bogotá-Colombia
 * Ingeniería electrónica
 
