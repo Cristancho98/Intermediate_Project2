@@ -5,14 +5,13 @@
 OneWire ourWire(2);
 DallasTemperature sensors(&ourWire);
 
-#define MASTER_ADDRESS 0x04
-#define SLAVE_ADDRESS 0X03
+#define SLAVE_ADDRESS 0X04
 int x=0;
 
 void setup(){
     pinMode(13, OUTPUT);
     Serial.begin(9600);
-    Wire.begin(MASTER_ADDRESS);
+    Wire.begin(SLAVE_ADDRESS);
     Wire.onReceive(receiveData);
     Wire.onRequest(rpi);
     sensors.begin();
@@ -26,18 +25,18 @@ void loop(void){
   Wire.onRequest(rpi);
 }
 void receiveData(int byteCount){
+    
     while(Wire.available()) {
          byteCount = Wire.read();
          Serial.println(byteCount);
-         if(byteCount==1){
-         digitalWrite(8,HIGH);
+         if( byteCount==0 ){
+         digitalWrite(13,HIGH);
          }
-         if(byteCount==0){
-           digitalWrite(8,LOW);
+         if( byteCount==1 ){
+           digitalWrite(13,LOW);
          }        
      }
 }
 void rpi(){
-  Wire.write(x);
-  
+  Wire.write(x); 
 }
