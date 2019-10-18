@@ -35,9 +35,6 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 * Elaborar un informe del proyecto empleando el formato IEEE.
 
 # DESARROLLO Y PROCEDIMIENTO
-### DIAGRAMA DE CONEXIÓN DEL SENSOR
-<a href="I2C"><img src="../master/Imagenes/Esquemático.PNG"  width="50%" align="justify"></a>
-
 ### CRITERIOS DE DISEÑO 
 
 1. La solución debe usar el sensor DS18B20 para medir la temperatura
@@ -45,6 +42,9 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 3. Generar la conexión maestro-esclavo utilizando el protocolo de comunicación I2C.
 4. Generar una alerta visual cuando el dato fue entregado exitosamente 
 5. Realizar el Script en raspbian por comunicación SSH 
+
+### DIAGRAMA DE CONEXIÓN DEL SENSOR
+<a href="I2C"><img src="../master/Imagenes/Esquemático.PNG"  width="50%" align="justify"></a>
 
 ### DIAGRAMA DE BLOQUES DE LA SOLUCIÓN
 
@@ -143,6 +143,14 @@ EDITAR /etc/rc.local y agregar justo antes de exit 0
     iptables-restore < /etc/iptables.ipv4.nat
 
 * Reiniciar raspberry
+
+
+
+
+
+
+
+
 
 **SCRIPT DE PYTHON** 
      
