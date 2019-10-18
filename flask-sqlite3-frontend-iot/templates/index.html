@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>IOT Dashboard</title>
+    <!-- BOOTSTRAP 4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/lux/bootstrap.min.css">
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css?family=Lobster&display=swap" rel="stylesheet">
+    <!-- MAIN CSS -->
+    <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+
+</head>
+
+<body>
+
+    <main class="container p-4">
+        <h1 class="display-4 text-center title mt-4">Gestor de Temperatura IOT</h1>
+        <div class="row">
+
+            <div class="col-md-9 offset-md-1 my-auto">
+
+                <div class="card">
+                    <div class="card-header">
+                        <form >
+                            <div class="form-group">
+                                <h2>estado:</h2>
+                                {% if actual < 25 %} <!-- revisar condicional -->
+                                <p name="alarma">APAGADA</p>
+                                {% else %}
+                                <p name="alarma">ENCENDIDA</p>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Apagar Alarma</button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+
+                    </div>
+                    <div class="card-body">
+                        <h4>Temperatura Actual</h4>
+                        <p>{{actual}}</p>
+                    </div>
+                    <div class="card-body">
+                        <h4>Registro historico de Temperatura</h4>
+                        <a href="{{url_for('home')}}" class="btn btn-success btn-sm">Actualizar db</a>
+                        <a href="/deleteall" class="btn btn-danger btn-sm">borrar db</a>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Temperatura</th>
+                                    <th>fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for temp in temps %}
+                                <tr>
+                                    <th>{{temp.id}}</th>
+                                    <td>{{temp.temperature}}</td>
+                                    <td>{{temp.date}}</td>
+                                {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+</body>
+
+</html>
