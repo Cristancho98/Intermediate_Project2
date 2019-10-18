@@ -36,7 +36,7 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 
 # DESARROLLO Y PROCEDIMIENTO
 ### DIAGRAMA DE CONEXIÓN DEL SENSOR
-%% <a href="I2C"><img src="../master/Imagenes/Esquemático.PNG"  width="50%" align="justify"></a>
+<a href="I2C"><img src="../master/Imagenes/Esquemático.PNG"  width="50%" align="justify"></a>
 
 ### CRITERIOS DE DISEÑO 
 
@@ -48,7 +48,7 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 
 ### DIAGRAMA DE BLOQUES DE LA SOLUCIÓN
 
-%% <a href="I2C"><img src="../master/Diagramas/BLOQUES.PNG"  width="50%" align="justify"></a>
+<a href="I2C"><img src="../master/Diagramas/BLOQUES.PNG"  width="80%" align="justify"></a>
 
 ## COMUNICACIÓN I2C
 1. Iniciar la raspberry y acceder a la consola de comando
