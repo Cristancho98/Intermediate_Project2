@@ -44,7 +44,7 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 5. Realizar el Script en raspbian por comunicación SSH 
 
 ### DIAGRAMA DE CONEXIÓN DEL SENSOR
-<a href="I2C"><img src="../master/Imagenes/Esquemático.PNG"  width="50%" align="justify"></a>
+<a href="I2C"><img src="../master/Imagenes/Esquemático.png"  width="50%" align="justify"></a>
 
 ### DIAGRAMA DE BLOQUES DE LA SOLUCIÓN
 
