@@ -5,10 +5,9 @@
 * Ingeniería electrónica
 
 ## INTRODUCCIÓN
+Este pryecto nace como compendio de todo lo aprendido hasta la fecha, se plantea desarrollar un sistema de control de temperatura de doble nivel que permia visualizar los datos históricos captados por el sensor DS18B20 en una página web Hotspot.
 
-
-
-## MATERIALES //LISTO
+## MATERIALES 
 * 1 PC
 * Chrome/Mozilla/Internet Explorer
 * Acceso a servicio de Internet
@@ -18,7 +17,7 @@
 * 1 protoboard y cables
 * Elementos eléctricos para el circuito de acondicionamiento del sensor DS18B20 y actuador LED
 
-## OBJETIVOS //LISTO
+## OBJETIVOS 
 * Afianzar los conceptos básicos asociados a Internet de las Cosas (IoT).
 * Familiarizarse con el manaje de gestores de bases de datos y servidores Web en sistemas embebidos.
 * Familiarizarse con una arquitectura de dos niveles compuesta por un controlador de bajo nivel y un
@@ -36,9 +35,10 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 * Elaborar un informe del proyecto empleando el formato IEEE.
 
 # DESARROLLO Y PROCEDIMIENTO
+### DIAGRAMA DE CONEXIÓN DEL SENSOR
+%% <a href="I2C"><img src="../master/Imagenes/Esquemático.PNG"  width="50%" align="justify"></a>
 
-
-### CRITERIOS DE DISEÑO //LISTO
+### CRITERIOS DE DISEÑO 
 
 1. La solución debe usar el sensor DS18B20 para medir la temperatura
 2. Los datos recibidos por el sensor deben almacenarse en en una base de datos local en la rapsberry
@@ -48,9 +48,9 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 
 ### DIAGRAMA DE BLOQUES DE LA SOLUCIÓN
 
-%% <a href="I2C"><img src="../master/Diagramas/Diagrama_Bloques.PNG"  width="50%" align="justify"></a>
+%% <a href="I2C"><img src="../master/Diagramas/BLOQUES.PNG"  width="50%" align="justify"></a>
 
-## COMUNICACIÓN I2C //LISTO
+## COMUNICACIÓN I2C
 1. Iniciar la raspberry y acceder a la consola de comando
 2. Configurar la raspberry
   * sudo raspi-config
@@ -71,12 +71,78 @@ de los valores arrojados por el controlador de bajo utilizando scripts.
 <a href="I2C"><img src="../master/Esquemáticos/I2C_esquematico.PNG"  width="70%" align="center"></a>
 
 ## PROCEDIMIENTO DE LA SOLUCIÓN
-
-%%%%%%%%%%%%%%%
-
 **DIAGRAMA DE CONEXIÓN** 
 
 %% <a href="I2C"><img src="../master/Diagramas/Conexión.PNG"  width="70%" align="center"></a>
+
+**CONFIGURACIÓN DE RASPBERRY COMO ACCESS POINT**
+* sudo apt install dnsmasq hostapd
+* sudo systemctl stop dnsmasq
+* sudo systemctl stop hostapd
+* sudo nano /etc/dhcpcd.conf
+
+copiar en el final del archivo 
+
+    interface wlan0
+           static ip_address=192.168.4.1/24
+           nohook wpa_supplicant
+           
+* sudo service dhcpcd restart
+* sudo service dhcpcd restart
+* sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+* sudo nano /etc/dnsmasq.conf
+
+COPIAR EN EL ARCHIVO
+
+    interface=wlan0      # Use the require wireless interface - 
+    usually wlan0
+    dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
+
+**Configuración del software host del punto de acceso (hostapd)**
+
+* sudo nano /etc/hostapd/hostapd.conf
+
+AGREGAR ESTO
+
+    interface=wlan0
+    driver=nl80211
+    ssid= NOMBREDELARED
+    hw_mode=g
+    channel=7
+    wmm_enabled=0
+    macaddr_acl=0
+    auth_algs=1
+    ignore_broadcast_ssid=0
+    wpa=2
+    wpa_passphrase=AardvarkBadgerHedgehog
+    wpa_key_mgmt= CONTRASEÑADELARED
+    wpa_pairwise=TKIP
+    rsn_pairwise=CCMP
+
+* sudo nano /etc/default/hostapd
+
+reemplazar la linea #DAEMON_CONF 
+
+    DAEMON_CONF="/etc/hostapd/hostapd.conf"
+
+**PONERLO EN MARCHA**
+* sudo systemctl unmask hostapd
+* sudo systemctl enable hostapd
+* sudo systemctl start hostapd
+* sudo nano /etc/sysctl.conf
+
+DESCOMENTE ESTA lÍNEA
+
+    net.ipv4.ip_forward=1
+
+* sudo iptables -t nat -A  POSTROUTING -o eth0 -j MASQUERADE
+* sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+
+EDITAR /etc/rc.local y agregar justo antes de exit 0
+
+    iptables-restore < /etc/iptables.ipv4.nat
+
+* Reiniciar raspberry
 
 **SCRIPT DE PYTHON** 
      
